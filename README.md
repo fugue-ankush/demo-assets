@@ -1,4 +1,4 @@
-##This repo contains standard basic demo assests for demo of Fugue
+## This repo contains standard basic demo assests for demo of Fugue
 
 **1. FugueDemo.lw -** Composition uses policies in DemoPolicies directory and throws 3 validation errors (Region, Instance size and missing Name tag for SG) 
 
@@ -12,7 +12,7 @@
 
 **6. validation-index -** Git Submodule for initial version of HIPAA and NIST policies. Repo can be accessed at https://github.com/LuminalHQ/validation-index. See below to update this submodule to pull latest version
 
-###Instructions to work with this repo and submodules:
+### Instructions to work with this repo and submodules:
 1. Clone main repo: `git clone --recurse-submodules https://github.com/fugue-ankush/demo-assests.git`
 2. Update submodules to pull latest build: `git submodule update --remote`
 > This points to `master` branch of each submodule 
