@@ -1,0 +1,11 @@
+import Fugue.AWS.AutoScaling as AutoScaling
+import Fugue.AWS.EC2 as EC2
+
+validate validateInstanceType
+
+fun validateInstanceType(instanceType: EC2.InstanceType) -> Validation:
+  case instanceType of
+    | EC2.T2_micro  -> Validation.success
+    | EC2.T2_small  -> Validation.success
+    | EC2.T2_medium -> Validation.success
+    | _ -> Validation.failure("Failed Compliance Validation: Must be a valid EC2 instance type. Please see InfoSec.\n")

@@ -1,0 +1,52 @@
+composition
+
+import Fugue.AWS.EC2 as EC2
+import Fugue.AWS.IAM as IAM
+import Fugue.AWS.Pattern.Network as Network
+import Fugue.AWS as AWS
+import Validationfunctions as . 
+
+# Region
+web-app-region: AWS.Us-west-2
+ec2-instance-type: EC2.T2_micro
+
+web-app-tag: [
+  AWS.tag("Owner", "admin@example.org"),
+  AWS.tag("Classification", "low"),
+]
+
+# Network (VPC)
+web-app-network: Network.new {
+  name: "web-app-network",
+  region: web-app-region,
+  cidr: "10.1.0.0/16",
+  publicSubnets: [
+    (AWS.A, "10.1.0.0/24"),
+  ],
+  privateSubnets: [],
+  enableDnsSupport: True,
+  enableDnsHostnames: True,
+  tags: web-app-tag,
+}
+
+instance: EC2.Instance.new {
+  subnet: List.index(web-app-network.publicSubnets, 0),
+  image: getAmiForRegionAndType(web-app-region, ec2-instance-type),
+  securityGroups: [instance-sg],
+  instanceType: ec2-instance-type,
+  tags: web-app-tag,
+  keyName: "admin-login-demo",
+  associatePublicIpAddress: True,
+  instanceInitiatedShutdownBehavior: EC2.Terminate,
+}
+
+instance-sg: EC2.SecurityGroup({
+  description: "Allow http and SSH traffic from the Internet",
+  ipPermissions: [
+    EC2.IpPermission.http(EC2.IpPermission.Target.all),
+    EC2.IpPermission.ssh(EC2.IpPermission.Target.all),
+  ],
+  ipPermissionsEgress: None,
+  tags: web-app-tag,
+  vpc: web-app-network.vpc
+})

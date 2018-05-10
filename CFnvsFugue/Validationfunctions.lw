@@ -1,0 +1,84 @@
+import Fugue.AWS as AWS
+import Fugue.AWS.EC2 as EC2
+
+validate allowedregion
+validate validateInstanceTypeStandard
+validate requireStandardTagsOnEC2Instances
+validate requireStandardTagsOnEC2Vpcs
+
+requiredTags: [
+  "Owner",
+  "Classification",
+]
+
+fun validateInstanceTypeStandard(instanceType: EC2.InstanceType) -> Validation:
+  case instanceType of
+    | EC2.T1_micro  -> Validation.success
+    | EC2.T2_micro  -> Validation.success
+    | EC2.T2_small  -> Validation.success
+    | EC2.T2_medium -> Validation.success
+    | EC2.M1_small -> Validation.success
+    | EC2.M1_medium -> Validation.success
+    | EC2.M1_large -> Validation.success
+    | EC2.M1_xlarge -> Validation.success
+    | EC2.M2_xlarge -> Validation.success
+    | EC2.M2_2xlarge -> Validation.success
+    | EC2.M2_4xlarge -> Validation.success
+    | EC2.M3_medium -> Validation.success
+    | EC2.M3_large -> Validation.success
+    | EC2.M3_xlarge -> Validation.success
+    | EC2.M3_2xlarge -> Validation.success
+    | EC2.C1_medium -> Validation.success
+    | EC2.C1_xlarge -> Validation.success
+    | EC2.C3_large -> Validation.success
+    | EC2.C3_xlarge -> Validation.success
+    | EC2.C3_2xlarge -> Validation.success
+    | EC2.C3_4xlarge -> Validation.success
+    | EC2.C3_8xlarge -> Validation.success
+    | EC2.C4_large -> Validation.success
+    | EC2.C4_2xlarge -> Validation.success
+    | EC2.C4_4xlarge -> Validation.success
+    | EC2.C4_8xlarge -> Validation.success
+    | _ -> Validation.failure("Failed Compliance Validation: EC2 Instance type is not allowed.")
+
+fun getAmiForRegionAndType(region: AWS.Region, instance: EC2.InstanceType) -> String:
+  case (region, instance) of
+    | (AWS.Us-west-1, EC2.T1_micro) -> "ami-d514f291"
+    | (AWS.Us-west-1, EC2.M1_small) -> "ami-d114f295"
+    | (AWS.Us-east-1, EC2.T1_micro) -> "ami-1ccae774"
+    | (AWS.Us-east-1, EC2.M1_small) -> "ami-1ecae776"
+    | (AWS.Us-west-2, EC2.T1_micro) -> "ami-b7b366d7"
+    | (AWS.Us-west-2, EC2.T2_micro) -> "ami-b7b366d7"
+    | (AWS.Us-west-2, EC2.M1_small) -> "ami-b7b366d7"
+    | _                             -> "No AMI"
+
+fun allowedregion(region: AWS.Region) -> Validation:
+  case region of
+    | AWS.Us-east-1 -> Validation.success
+    | AWS.Us-west-1 -> Validation.success
+    | AWS.Us-west-2 -> Validation.success
+    | AWS.Eu-west-1 -> Validation.success
+    | AWS.Eu-central-1 -> Validation.success
+    | AWS.Ap-southeast-1 -> Validation.success
+    | AWS.Ap-southeast-2 -> Validation.success
+    | AWS.Sa-east-1 -> Validation.success
+    | _             -> Validation.failure("Invalid Region")
+
+fun includesRequiredTags(tags: List<AWS.Tag>) -> Bool:
+  let fun includesTag(key: String) -> Bool:
+    List.any(fun(t): AWS.Tag.key(t) == key && String.length(AWS.Tag.value(t)) > 0, tags)
+  List.all(includesTag, requiredTags)
+
+fun requireStandardTags(resource: String, tags: List<AWS.Tag>) -> Validation:
+  if includesRequiredTags(tags) then Validation.success
+  else
+    let requiredList: String.join("\n", ["    - " ++ t for t in requiredTags])
+    Validation.failure("All '" ++ resource ++"' resources must have the following tags:\n" ++ requiredList ++ "\n")
+
+fun requireStandardTagsOnEC2Instances(instance: EC2.Instance) -> Validation:
+  let tags: Optional.unpack([], instance.(EC2.Instance).tags)
+  requireStandardTags("EC2" ,tags)
+  
+fun requireStandardTagsOnEC2Vpcs(vpc: EC2.Vpc) -> Validation:
+  let tags: Optional.unpack([], vpc.(EC2.Vpc).tags)
+  requireStandardTags("vpc", tags)

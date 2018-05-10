@@ -1,0 +1,4 @@
+fugue.yaml
+fuguecli.log
+fugue.yaml.old
+*.gz
