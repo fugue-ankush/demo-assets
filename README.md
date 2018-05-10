@@ -18,4 +18,9 @@
     > This points to `master` branch of each submodule 
 
 
+#### Things to add next
+    > HIPAA app example
+    > GDPR app example
+    
+
 
