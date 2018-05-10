@@ -1,0 +1,9 @@
+[submodule "sample-gdpr-policies"]
+	path = sample-gdpr-policies
+	url = https://github.com/fugue-ankush/sample-gdpr-policies.git
+[submodule "fugue-policy"]
+	path = fugue-policy
+	url = https://github.com/LuminalHQ/fugue-policy
+[submodule "validation-index"]
+	path = validation-index
+	url = https://github.com/LuminalHQ/validation-index
